@@ -1,0 +1,24 @@
+@import './mixins.scss';
+
+.main-layout {
+	@include theme-aware(background-color, bg);
+	width: 100%;
+	min-height: 100vh;
+	position: relative;
+}
+
+.vn-container {
+	width: 100%;
+	padding: 48px;
+	padding-bottom: 16px;
+	margin: auto;
+	max-width: 1440px;
+	min-height: calc(100vh - 56px);
+	display: flex;
+	flex-direction: column;
+	gap: 40px;
+	@media only screen and (max-width: 768px) {
+		padding: 48px 24px;
+		gap: 24px;
+	}
+}

@@ -1,0 +1,828 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+* {
+	box-sizing: border-box;
+}
+a {
+	text-decoration: none;
+}
+.modal-content {
+	border-radius: 12px;
+	background-color: transparent;
+	border: none;
+}
+p {
+	margin: 0px;
+}
+img,
+svg {
+	vertical-align: initial;
+}
+html,
+body,
+#root {
+	margin: 0;
+	padding: 0;
+}
+body {
+	font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen', 'Ubuntu',
+		'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+	-webkit-font-smoothing: antialiased;
+	scroll-behavior: smooth;
+}
+
+.main-header {
+	position: sticky;
+	z-index: 1;
+	top: 0px;
+	left: 0px;
+	@include theme-aware(background-color, headerBg);
+	display: flex;
+	height: 56px;
+	padding: 0px 40px 0px 24px;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	@media only screen and (max-width: 768px) {
+		/* For mobile phones: */
+		padding: 0px 24px;
+	}
+	.left-logo-container {
+		display: flex;
+		padding: 9px;
+		align-items: center;
+		gap: 0.5px;
+		.logo-icn {
+			width: 33px;
+			height: 32px;
+			svg {
+				path {
+					@include theme-aware(fill, logoColor);
+				}
+			}
+		}
+		.logo-text {
+			@include theme-aware(color, logoColor);
+			font-family: Roboto;
+			font-size: 14px;
+			font-style: normal;
+			font-weight: 400;
+			line-height: 24px;
+			letter-spacing: 0.5px;
+		}
+	}
+	.right-header-container {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 16px;
+		height: 100%;
+		.theme-left-icn {
+			svg {
+				path {
+					@include theme-aware(fill, logoColor);
+				}
+			}
+		}
+		.theme-right-icn {
+			svg {
+				path {
+					@include theme-aware(fill, moonIcon);
+				}
+			}
+		}
+		.theme-toggle-container {
+			position: relative;
+			min-width: 44px;
+			min-height: 16px;
+			max-height: 16px;
+			border-radius: 8px;
+			@include theme-aware(background-color, toggleBg);
+			cursor: pointer;
+			.toggle-head {
+				position: absolute;
+				top: -4px;
+				left: 0px;
+				@include theme-aware(background-color, toggleHead);
+				min-width: 24px;
+				min-height: 24px;
+				border-radius: 100%;
+				@include transition;
+			}
+		}
+		.theme-toggle-container.active {
+			.toggle-head {
+				left: 20px;
+			}
+		}
+	}
+}
+
+input:focus-visible {
+	outline: none;
+}
+
+input.vn-search-bar-container {
+	display: flex;
+	flex: 1;
+	padding: 10px 16px;
+	height: 40px;
+	@include theme-aware(color, searchTextColor);
+	background-color: transparent;
+	font-family: Roboto;
+	font-size: 14px;
+	font-style: normal;
+	font-weight: 400;
+	line-height: 20px; /* 142.857% */
+	letter-spacing: 0.25px;
+	@include theme-aware(border, searchBorder, 1px solid);
+}
+
+input.vn-search-bar-container::placeholder {
+	@include theme-aware(color, searchPlaceholderTextColor);
+}
+
+.vn-actions-container {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	width: 100%;
+	@media only screen and (max-width: 768px) {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}
+.vn-actions-right-container {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	height: 40px;
+	@media only screen and (max-width: 768px) {
+		justify-content: flex-end;
+	}
+	.vn-toggle-view-container {
+		@media only screen and (max-width: 768px) {
+			display: none;
+		}
+	}
+}
+
+.vn-btn-primary {
+	display: flex;
+	height: 44px;
+	padding: 8px 12px;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	border-radius: 4px;
+	background: $colorprimary;
+	box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0);
+	font-family: Roboto;
+	font-size: 14px;
+	font-style: normal;
+	font-weight: 700;
+	line-height: 20px;
+	letter-spacing: 0.25px;
+	border: none;
+	@include theme-aware(color, primaryBtnTextColor);
+}
+
+.vn-btn-primary.outline {
+	height: 38px;
+	gap: 8px;
+	@include theme-aware(border, primaryBtnOutlineBorder, 1px solid);
+	@include theme-aware(background-color, primaryBtnOutlineBg);
+	@include theme-aware(color, primaryBtnOutlineText);
+
+	svg {
+		width: 16px;
+		height: 16px;
+		path {
+			@include theme-aware(fill, primaryBtnOutlineText);
+		}
+	}
+}
+
+.vn-btn-secondary {
+	display: flex;
+	height: 44px;
+	width: 170px;
+	padding: 8px 12px;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	border-radius: 6px;
+	@include theme-aware(border, secondaryBtnBorder, 1px solid);
+	@include theme-aware(background-color, secondaryBtnBg);
+	box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0);
+	font-family: Roboto;
+	font-size: 14px;
+	font-style: normal;
+	font-weight: 400;
+	line-height: 20px;
+	letter-spacing: 0.25px;
+	@include theme-aware(color, secondaryBtnText);
+}
+
+.vn-btn-danger {
+	display: flex;
+	height: 44px;
+	width: 170px;
+	padding: 8px 12px;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	border-radius: 6px;
+	background-color: $dataalertred;
+	border: none;
+	box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0);
+	font-family: Roboto;
+	font-size: 14px;
+	font-style: normal;
+	font-weight: 500;
+	line-height: 20px;
+	letter-spacing: 0.25px;
+	color: $textprimary;
+}
+
+@keyframes spinAnim {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.animate-spin {
+	animation: spinAnim;
+	animation-timing-function: ease-in-out;
+	animation-duration: 0.3s;
+	animation-iteration-count: infinite;
+}
+
+.vn-toggle-view-container {
+	box-sizing: border-box;
+	display: flex;
+	height: 36px;
+	align-items: flex-start;
+	border-radius: 4px;
+	@include theme-aware(border, toggleViewBorder, 1px solid);
+	.vn-toggle-view-item:first-child {
+		border-radius: 4px 0px 0px 4px;
+	}
+	.vn-toggle-view-item:last-child {
+		border-radius: 0px 4px 4px 0px;
+	}
+	.vn-toggle-view-item {
+		display: flex;
+		height: 34px;
+		width: 40px;
+		justify-content: center;
+		align-items: center;
+		flex: 1;
+		cursor: pointer;
+		@include transition;
+		svg {
+			width: 20px;
+			height: 20px;
+			path,
+			rect {
+				fill: $gray600;
+			}
+		}
+	}
+	.vn-toggle-view-item.active {
+		background-color: $colorhover;
+		svg {
+			path,
+			rect {
+				@include theme-aware(fill, toggleViewIcon);
+			}
+		}
+	}
+}
+
+.vn-grid-view-cards-container {
+	display: grid;
+	grid-auto-rows: auto;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	grid-gap: 24px;
+	@media only screen and (max-width: 768px) {
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	}
+}
+
+.vn-infinite-container {
+	.infinite-scroll-component__outerdiv {
+		.infinite-scroll-component {
+			display: grid;
+			grid-auto-rows: auto;
+			grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+			grid-gap: 24px;
+			@media only screen and (max-width: 768px) {
+				grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+			}
+		}
+	}
+}
+
+.vn-grid-view-card {
+	display: flex;
+	padding: 24px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
+	flex: 1;
+	border-radius: 8px;
+	@include theme-aware(background-color, cardbg);
+	.vn-card-top {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		align-self: stretch;
+		img {
+			border-radius: 100%;
+			width: 64px;
+			height: 64px;
+			object-fit: cover;
+		}
+		.vn-card-top-right {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex: 1;
+			max-width: calc(100% - 80px);
+			.vn-card-top-right-left {
+				display: flex;
+				max-width: calc(100% - 32px);
+				flex-direction: column;
+				justify-content: center;
+				align-items: flex-start;
+				gap: 2px;
+				.vn-card-profile-name-container {
+					display: flex;
+					align-items: center;
+					gap: 4px;
+					align-self: stretch;
+					.vn-card-profil-name {
+						display: inline-block;
+						@include theme-aware(color, cardNameText);
+						font-family: Roboto;
+						font-size: 16px;
+						font-style: normal;
+						font-weight: 500;
+						line-height: 24px;
+						letter-spacing: 0.5px;
+						@include ellipsis;
+					}
+					svg {
+						min-width: 16px;
+						min-height: 16px;
+					}
+				}
+				.vn-card-profile-email {
+					display: inline-block;
+					@include theme-aware(color, cardEmailColor);
+					@include ellipsis;
+					font-family: Roboto;
+					font-size: 14px;
+					font-style: normal;
+					font-weight: 400;
+					line-height: 20px;
+					letter-spacing: 0.25px;
+					max-width: 100%;
+				}
+			}
+			.vn-card-top-right-right {
+				cursor: pointer;
+				svg {
+					min-width: 24px;
+					min-height: 24px;
+					path {
+						fill: $gray500;
+					}
+				}
+			}
+		}
+	}
+	.vn-card-bottom {
+		@include theme-aware(color, cardDescColor);
+		font-family: Roboto;
+		font-size: 12px;
+		font-style: normal;
+		font-weight: 400;
+		line-height: 16px;
+		letter-spacing: 0.4px;
+		@include multiline-ellipsis;
+		align-self: stretch;
+		height: 96px;
+	}
+}
+
+.vn-input-container {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	width: 100%;
+	label.input-label {
+		@include theme-aware(color, cardEmailColor);
+		font-family: Roboto;
+		font-size: 12px;
+		font-style: normal;
+		font-weight: 400;
+		line-height: 16px;
+		letter-spacing: 0.4px;
+	}
+	input,
+	textarea {
+		width: 100%;
+		height: 40px;
+		padding: 10px 8px;
+		border-radius: 4px;
+		@include theme-aware(border, inputBorder, 1px solid);
+		@include theme-aware(color, inputText);
+		font-family: Roboto;
+		font-size: 14px;
+		font-style: normal;
+		font-weight: 400;
+		line-height: 20px;
+		letter-spacing: 0.25px;
+		background-color: transparent;
+	}
+
+	textarea {
+		height: auto;
+		resize: none;
+		&:hover {
+			outline: none;
+		}
+		&:focus {
+			outline: none;
+		}
+	}
+}
+
+.vn-input-container.input-error {
+	label.input-label {
+		color: $dataalertred !important;
+	}
+	input,
+	textarea {
+		border-color: $dataalertred !important;
+	}
+}
+
+.toggle-btn-container {
+	position: relative;
+	min-width: 44px;
+	min-height: 16px;
+	max-height: 16px;
+	border-radius: 8px;
+	@include theme-aware(background-color, toggleBtnBg);
+	cursor: pointer;
+	.toggle-btn-head {
+		position: absolute;
+		top: -4px;
+		left: 0px;
+		@include theme-aware(background-color, toggleBtnHead);
+		min-width: 24px;
+		min-height: 24px;
+		border-radius: 100%;
+		@include transition;
+	}
+}
+
+.toggle-btn-container.active {
+	background-color: $colorprimary2 !important;
+	.toggle-btn-head {
+		background-color: $colorprimary !important;
+		left: 20px;
+	}
+}
+
+.toggle-input-field-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	gap: 16px;
+	width: 100%;
+	.toggle-input-label {
+		@include theme-aware(color, toggleInputLabel);
+		font-family: Roboto;
+		font-size: 12px;
+		font-style: normal;
+		font-weight: 400;
+		line-height: 16px;
+		letter-spacing: 0.4px;
+	}
+}
+
+.toggle-input-container {
+	border-radius: 4px;
+	@include theme-aware(border, toggleInputBorder, 1px solid);
+	@include theme-aware(background-color, toggleInputBg);
+	display: flex;
+	width: 100%;
+	padding: 16px;
+	justify-content: space-between;
+	align-items: center;
+	.toggle-input-title {
+		@include theme-aware(color, toggleInputTitle);
+		font-family: Roboto;
+		font-size: 16px;
+		font-style: normal;
+		font-weight: 400;
+		line-height: 24px;
+		letter-spacing: 0.5px;
+	}
+}
+
+.vn-dropdown-container {
+	position: relative;
+	cursor: pointer;
+}
+
+.vn-dropdown-container.show-top {
+	.vn-dropdown-menu {
+		top: -68px;
+	}
+}
+
+.vn-dropdown-menu {
+	position: absolute;
+	right: 0px;
+	top: -10px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	@include theme-aware(background-color, dropdownBg);
+	.vn-dropdown-item {
+		cursor: pointer;
+		display: flex;
+		min-width: 143px;
+		padding: 12px;
+		align-items: center;
+		gap: 8px;
+		@include theme-aware(color, dropdownItemText);
+		font-family: Roboto;
+		font-size: 14px;
+		font-style: normal;
+		font-weight: 400;
+		line-height: 20px;
+		letter-spacing: 0.25px;
+	}
+}
+
+.vn-table-container {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 16px;
+	table {
+		border-collapse: collapse;
+		width: 100%;
+		thead {
+			tr {
+				th {
+					padding: 16px;
+					@include theme-aware(color, inputText);
+					font-family: Roboto;
+					font-size: 14px;
+					font-style: normal;
+					font-weight: 400;
+					line-height: 20px;
+					letter-spacing: 0.25px;
+					&:hover {
+						.th-container {
+							.sort-icon {
+								visibility: visible;
+							}
+						}
+					}
+					.th-container {
+						display: flex;
+						align-items: center;
+						gap: 4px;
+						flex: 1 0 0;
+						.sort-icon {
+							visibility: hidden;
+							display: flex;
+							justify-content: center;
+							align-items: center;
+							width: 24px;
+							height: 24px;
+
+							svg {
+								width: 10.004px;
+								height: 15.997px;
+								path {
+									@include theme-aware(fill, inputText);
+								}
+							}
+						}
+						.sort-icon.active {
+							visibility: visible;
+						}
+						.sort-icon.sort-asc {
+							svg {
+								transform: rotate(-180deg);
+							}
+						}
+						.settings-icon {
+							display: flex;
+							justify-content: center;
+							align-items: center;
+							width: 24px;
+							height: 24px;
+							svg {
+								path {
+									@include theme-aware(fill, tableRowSettingIcon);
+								}
+							}
+						}
+					}
+				}
+				th.sortable {
+					cursor: pointer;
+				}
+				th:nth-child(1) {
+					width: 284px;
+					max-width: 284px;
+				}
+				th:nth-child(2) {
+					padding-left: 32px;
+					width: 136px;
+					max-width: 136px;
+				}
+				th:nth-child(3) {
+					width: 14.16%;
+				}
+				th:nth-child(4) {
+					width: 53.19%;
+				}
+				th:nth-child(5) {
+					width: 52px;
+				}
+			}
+		}
+		tbody {
+			tr {
+				@include theme-aware(border-top, tableRowBorderBottom, 1px solid);
+				td {
+					height: 77px;
+					padding: 14px 16px;
+					padding-right: 24px;
+					font-family: Roboto;
+					font-size: 12px;
+					font-style: normal;
+					font-weight: 400;
+					line-height: 16px;
+					letter-spacing: 0.4px;
+					@include theme-aware(color, searchTextColor);
+					@include ellipsis;
+					.td-container {
+						display: flex;
+						align-items: center;
+						gap: 16px;
+						flex: 1 0 0;
+						@include ellipsis;
+						img {
+							width: 48px;
+							height: 48px;
+							object-fit: cover;
+							border-radius: 48px;
+						}
+						.profile-name {
+							@include theme-aware(color, cardNameText);
+							text-align: center;
+							font-family: Roboto;
+							font-size: 14px;
+							font-style: normal;
+							font-weight: 400;
+							line-height: 20px;
+							letter-spacing: 0.25px;
+							@include ellipsis;
+						}
+						.badge-icon {
+							width: 24px;
+							height: 24px;
+						}
+					}
+				}
+				td:nth-child(2) {
+					padding-left: 32px;
+					width: 136px;
+					max-width: 136px;
+				}
+				td:nth-child(1) {
+					padding-left: 16px;
+					padding-right: 16px;
+					width: 284px;
+					max-width: 284px;
+				}
+				td:nth-child(4) {
+					@include multiline-ellipsis-h3;
+				}
+				td:nth-child(5) {
+					overflow: visible;
+				}
+			}
+		}
+	}
+
+	.table-pagination-container {
+		position: sticky;
+		bottom: 0px;
+		left: 0px;
+		width: 100%;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 16px;
+		height: 56px;
+		padding-bottom: 16px;
+		@include theme-aware(background-color, bg);
+		.pagination-row-chooser {
+			display: flex;
+			align-items: flex-start;
+			gap: 4px;
+			@include theme-aware(color, tablePageNavText);
+			font-family: Roboto;
+			font-size: 14px;
+			font-style: normal;
+			font-weight: 400;
+			line-height: 20px; /* 142.857% */
+			letter-spacing: 0.25px;
+			.page-rows-title {
+				@include theme-aware(color, tablePageNavText);
+			}
+			.page-rows-right {
+				@include theme-aware(color, tablePageNavText);
+				cursor: pointer;
+				display: flex;
+				align-items: flex-start;
+				svg {
+					path {
+						@include theme-aware(fill, tablePageNavText);
+					}
+				}
+			}
+			.page-rows-right.expanded {
+				svg {
+					transform: rotate(180deg);
+				}
+			}
+		}
+
+		.page-number-container {
+			display: flex;
+			align-items: flex-start;
+			gap: 8px;
+
+			font-family: Roboto;
+			font-size: 14px;
+			font-style: normal;
+			font-weight: 400;
+			line-height: 20px; /* 142.857% */
+			letter-spacing: 0.25px;
+
+			span:first-child {
+				@include theme-aware(color, tablePageNavText);
+			}
+			span:last-child {
+				@include theme-aware(color, tableRowSettingIcon);
+			}
+		}
+
+		.page-nav-container {
+			display: flex;
+			align-items: flex-start;
+			gap: 4px;
+			span {
+				cursor: pointer;
+				svg {
+					path {
+						@include theme-aware(fill, tableRowSettingIcon);
+					}
+				}
+				&:hover {
+					svg {
+						path {
+							@include theme-aware(fill, tablePageNavText);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+.vn-loading-infinite-loader {
+	@include theme-aware(color, cardNameText);
+}
