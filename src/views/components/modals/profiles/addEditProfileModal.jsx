@@ -1,12 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { ReactComponent as CloseIcon } from '../../../../assets/svg/close_24px.svg';
-import { addProfile, updateProfile } from '../../../../store';
 import Button from '../../button';
 import Input from '../../input';
 import TextArea from '../../textarea';
 import ToggleInput from '../../toggleInput';
 import _ from 'lodash';
-import { useThunk } from '../../../../hooks/use-thunk';
 import { useMutation } from '@apollo/client';
 import {
 	addProfileMutation,
@@ -14,8 +12,6 @@ import {
 } from '../../../../store/queries/profileQueries';
 
 function AddEditProfileModal({ title, fields, onClose, isEdit, onAddProfile, onUpdateProfile }) {
-	//const [doCreateProfile, isCreatingProfile, creatingProfileError] = useThunk(addProfile);
-	//const [doEditProfile, isEditProfileLoading, editProfileError] = useThunk(updateProfile);
 
 	const [doCreateProfile, { loading: isCreatingProfile, error: creatingProfileError }] =
 		useMutation(addProfileMutation);
@@ -190,7 +186,7 @@ function AddEditProfileModal({ title, fields, onClose, isEdit, onAddProfile, onU
 	return (
 		<div className="profile-add-edit-modal">
 			<div className="profile-add-edit-header">
-				<span className="header-title">{title}</span>
+				<span className="header-title">{isEdit ? 'Edit Profile' : 'Create Profile'}</span>
 				<span className="close-icon" onClick={() => onClose()}>
 					<CloseIcon />
 				</span>
@@ -281,7 +277,7 @@ function AddEditProfileModal({ title, fields, onClose, isEdit, onAddProfile, onU
 							}
 						}
 					}}
-					isLoading={isCreatingProfile}
+					isLoading={isCreatingProfile || isEditProfileLoading}
 					minWidth="114px"
 				/>
 			</div>

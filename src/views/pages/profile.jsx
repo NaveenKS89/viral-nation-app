@@ -16,6 +16,7 @@ import _ from 'lodash';
 import TableContainer from '../components/tableContainer';
 import { useQuery, useLazyQuery } from '@apollo/client';
 import { getProfilesQuery } from '../../store/queries/profileQueries';
+import LoadingIcon from '../components/LoadingIcon';
 
 function Profile() {
 	const { debounce } = useDebounce();
@@ -51,7 +52,7 @@ function Profile() {
 		},
 	});
 
-	const [
+	/* const [
 		queryProfiles,
 		{
 			loading: isProfileLoading,
@@ -69,15 +70,13 @@ function Profile() {
 			page: page,
 			searchString: search,
 		},
-	});
+	}); */
 
 	useEffect(() => {
 		if (isFirstLoad === true) {
 			setIsFirstLoad(false);
 		}
 	}, []);
-
-	console.log(data);
 
 	const handleWindowResize = (event) => {
 		// Get width and height of the window excluding scrollbars
@@ -127,7 +126,7 @@ function Profile() {
 
 	const fetchMoreFunc = () => {
 		if (page * rows + rows < data.getAllProfiles.size) {
-			fetchMoreProfiles({
+			fetchMore({
 				variables: {
 					orderBy: {
 						key: sortBy,
@@ -276,9 +275,9 @@ function Profile() {
 		}
 	};
 
-	if (isProfileLoading === false && loading === true) {
-		return;
-	}
+	/* if (loading === true) {
+		return <LoadingIcon />;
+	} */
 
 	if (error) {
 		<>
@@ -316,7 +315,11 @@ function Profile() {
 					<ToggleView onViewChange={(view) => handleChangeView(view)} activeView={view} />
 				</div>
 			</ActionsContainer>
-			{view === 'card' ? (
+			{loading === true ? (
+				<div className="vn-infinite-container">
+					<LoadingIcon />
+				</div>
+			) : view === 'card' ? (
 				<div className="vn-infinite-container">
 					<InfiniteScrollComponent
 						dataLength={_.size(data?.getAllProfiles.profiles)}
@@ -382,6 +385,10 @@ function Profile() {
 							setShowDeleteModal(false);
 						}}
 						selectedProfile={selectedProfile}
+						onRemoveProfile={() => {
+							setSelectedProfile(null);
+							onDetailsUpdated();
+						}}
 					/>
 				</Modal>
 			) : null}

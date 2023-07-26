@@ -22,6 +22,7 @@ function Button({
 			? 'vn-btn-danger'
 			: '';
 
+
 	return (
 		<button
 			className={btnTypeClass + (isOutline && type === 'primary' ? ' outline' : '')}

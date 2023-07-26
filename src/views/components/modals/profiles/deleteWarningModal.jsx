@@ -1,25 +1,26 @@
 import React, { useRef } from 'react';
 import { ReactComponent as DeleteIcon } from '../../../../assets/svg/close_24px.svg';
 import Button from '../../button';
-import { useThunk } from '../../../../hooks/use-thunk';
-import { removeProfile } from '../../../../store';
+import { useMutation } from '@apollo/client';
+import {
+	removeProfileMutation
+} from '../../../../store/queries/profileQueries';
 
-function DeleteWarningModal({ title, bodyText, onCancel, onClose, selectedProfile }) {
-	const [doRemoveProfile, isRemovingProfile, removingProfileError] = useThunk(removeProfile);
-	let timerRef = useRef();
+function DeleteWarningModal({ title, bodyText, onCancel, onClose, selectedProfile, onRemoveProfile }) {
+	const [doRemoveProfile, { loading: isRemovingProfile, error: removingProfileError }] =
+		useMutation(removeProfileMutation);
 
 	const handleDeleteProfile = (id) => {
-		doRemoveProfile({ deleteProfileId: id });
-		timerRef = setInterval(() => {
-			if (isRemovingProfile === false) {
+		doRemoveProfile({variables: { deleteProfileId: id },
+			onCompleted: () => {
+				onRemoveProfile();
 				onClose();
-				clearInterval(timerRef);
-			}
-			if (removingProfileError !== null) {
-				clearInterval(timerRef);
-			}
-		}, 100);
+			},
+			onError: () => {
+			},});
 	};
+
+	console.log(isRemovingProfile)
 
 	return (
 		<div className="delete-profile-modal">
@@ -31,9 +32,10 @@ function DeleteWarningModal({ title, bodyText, onCancel, onClose, selectedProfil
 			<div className="delete-profile-tail">
 				<Button type="secondary" title="Cancel" onButtonClick={onCancel} />
 				<Button
+					isLoading={isRemovingProfile}
 					type="danger"
 					title="Delete"
-					onButtonClick={() => handleDeleteProfile(selectedProfile.id)}
+					onButtonClick={() => isRemovingProfile === false && handleDeleteProfile(selectedProfile.id)}
 				/>
 			</div>
 		</div>
