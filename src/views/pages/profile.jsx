@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { withRouter } from '../../services/withRouter';
 import SearchBar from '../components/searchBar';
 import { ReactComponent as AddProfileIcon } from '../../assets/svg/plus-profile.svg';
@@ -10,7 +10,7 @@ import Modal from '../components/modals';
 import InfiniteScrollComponent from '../components/infiniteScrollComponent';
 import DeleteWarningModal from '../components/modals/profiles/deleteWarningModal';
 import AddEditProfileModal from '../components/modals/profiles/addEditProfileModal';
-import useDebounce from '../../hooks/useDebounce';
+import {useDebounce} from '../../hooks/useDebounce';
 import ProfilesTableRow from '../components/profilesTableRow';
 import _ from 'lodash';
 import TableContainer from '../components/tableContainer';
@@ -19,8 +19,7 @@ import { getProfilesQuery } from '../../store/queries/profileQueries';
 import LoadingIcon from '../components/LoadingIcon';
 
 function Profile() {
-	const { debounce } = useDebounce();
-
+	let  delayDebounceFn  = useRef(null);
 	const [search, setSearch] = useState('');
 	const [page, setPage] = useState(0);
 	const [isFirstLoad, setIsFirstLoad] = useState(true);
@@ -51,6 +50,8 @@ function Profile() {
 			searchString: search,
 		},
 	});
+
+	const searchQuery = useDebounce(search, 500);
 
 	/* const [
 		queryProfiles,
@@ -102,7 +103,8 @@ function Profile() {
 		setShowAddModal(true);
 	};
 
-	const handleSearchFetch = (e) => {
+	/* const handleSearchFetch = useCallback(_.debounce((e) => {
+		setPage(0);
 		refetch({
 			variables: {
 				orderBy: {
@@ -113,16 +115,27 @@ function Profile() {
 				page: 0,
 				searchString: e.target.value,
 			},
-		});
-		setPage(0);
-	};
+		});}, [])); */
 
-	const handleOnSearch = (e) => {
-		setSearch(() => {
-			debounce(handleSearchFetch(e), 500);
-			return e.target.value;
-		});
-	};
+	useEffect(() => {
+		
+		if(searchQuery || search.length < 0)searchCharacter()
+		function searchCharacter() {
+				setPage(0);
+				refetch({
+					variables: {
+						orderBy: {
+							key: sortBy,
+							sort: sortOrder === -1 ? 'desc' : 'asc',
+						},
+						rows: rows,
+						page: 0,
+						searchString: searchQuery,
+					},
+				});
+		}
+
+	}, [searchQuery]);
 
 	const fetchMoreFunc = () => {
 		if (page * rows + rows < data.getAllProfiles.size) {
@@ -279,7 +292,7 @@ function Profile() {
 		return <LoadingIcon />;
 	} */
 
-	if (error) {
+	/* if (error) {
 		<>
 			<ActionsContainer>
 				<SearchBar value={search} onChange={(e) => handleOnSearch(e)} />
@@ -297,12 +310,12 @@ function Profile() {
 			</ActionsContainer>
 			<div className="vn-infinite-container">{error}</div>
 		</>;
-	}
+	} */
 
 	return (
 		<>
 			<ActionsContainer>
-				<SearchBar value={search} onChange={(e) => handleOnSearch(e)} />
+				<SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
 				<div className="vn-actions-right-container">
 					<Button
 						type="primary"
@@ -315,7 +328,7 @@ function Profile() {
 					<ToggleView onViewChange={(view) => handleChangeView(view)} activeView={view} />
 				</div>
 			</ActionsContainer>
-			{loading === true ? (
+			{loading ? (
 				<div className="vn-infinite-container">
 					<LoadingIcon />
 				</div>
