@@ -7,12 +7,21 @@ import TextArea from '../../textarea';
 import ToggleInput from '../../toggleInput';
 import _ from 'lodash';
 import { useThunk } from '../../../../hooks/use-thunk';
+import { useMutation } from '@apollo/client';
+import {
+	addProfileMutation,
+	updateProfileMutation,
+} from '../../../../store/queries/profileQueries';
 
-function AddEditProfileModal({ title, fields, onClose, isEdit }) {
-	const [doCreateProfile, isCreatingProfile, creatingProfileError] = useThunk(addProfile);
-	const [doEditProfile, isEditProfileLoading, editProfileError] = useThunk(updateProfile);
+function AddEditProfileModal({ title, fields, onClose, isEdit, onAddProfile, onUpdateProfile }) {
+	//const [doCreateProfile, isCreatingProfile, creatingProfileError] = useThunk(addProfile);
+	//const [doEditProfile, isEditProfileLoading, editProfileError] = useThunk(updateProfile);
+
+	const [doCreateProfile, { loading: isCreatingProfile, error: creatingProfileError }] =
+		useMutation(addProfileMutation);
+	const [doEditProfile, { loading: isEditProfileLoading, error: editProfileError }] =
+		useMutation(updateProfileMutation);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	let timerRef = useRef();
 
 	const [image_url, setImage_url] = useState(fields?.image_url ? fields?.image_url : '');
 	const [image_urlError, setImage_urlError] = useState(false);
@@ -115,18 +124,18 @@ function AddEditProfileModal({ title, fields, onClose, isEdit }) {
 				description: description,
 			};
 
-			doCreateProfile(json);
-			timerRef = setInterval(() => {
-				if (isCreatingProfile === false) {
+			doCreateProfile({
+				variables: json,
+				onCompleted: () => {
+					onAddProfile();
+					setIsSubmitting(false);
 					onClose();
-					clearInterval(timerRef);
-				}
-				if (creatingProfileError !== null) {
-					clearInterval(timerRef);
-				}
-			}, 100);
+				},
+				onError: () => {
+					setIsSubmitting(false);
+				},
+			});
 		}
-		setIsSubmitting(false);
 	};
 
 	const handleSubmitEdit = () => {
@@ -164,18 +173,18 @@ function AddEditProfileModal({ title, fields, onClose, isEdit }) {
 				description: description,
 			};
 
-			doEditProfile(json);
-			timerRef = setInterval(() => {
-				if (isEditProfileLoading === false) {
+			doEditProfile({
+				variables: json,
+				onCompleted: () => {
+					onUpdateProfile();
+					setIsSubmitting(false);
 					onClose();
-					clearInterval(timerRef);
-				}
-				if (editProfileError !== null) {
-					clearInterval(timerRef);
-				}
-			}, 1000);
+				},
+				onError: () => {
+					setIsSubmitting(false);
+				},
+			});
 		}
-		setIsSubmitting(false);
 	};
 
 	return (
@@ -267,7 +276,9 @@ function AddEditProfileModal({ title, fields, onClose, isEdit }) {
 								handleSubmitAdd();
 							}
 						} else {
-							handleSubmitEdit();
+							if (!isSubmitting && !isEditProfileLoading) {
+								handleSubmitEdit();
+							}
 						}
 					}}
 					isLoading={isCreatingProfile}

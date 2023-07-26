@@ -3,17 +3,27 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import './assets/scss/global.scss';
 import App from './App';
-import { Provider } from 'react-redux';
+import { TOKEN } from './services/token';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
-import { store } from './store';
+import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+const API = require('./services/config').graphql_api_server;
+
+const client = new ApolloClient({
+	uri: API,
+	cache: new InMemoryCache(),
+	headers: {
+		authorization: TOKEN,
+	},
+});
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
 	<BrowserRouter>
-		<Provider store={store}>
+		<ApolloProvider client={client}>
 			<App />
-		</Provider>
+		</ApolloProvider>
 	</BrowserRouter>,
 );
 

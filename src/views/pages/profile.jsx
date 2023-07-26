@@ -1,7 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { fetchProfiles } from '../../store';
-import { useThunk } from '../../hooks/use-thunk';
+import { useEffect, useState } from 'react';
 import { withRouter } from '../../services/withRouter';
 import SearchBar from '../components/searchBar';
 import { ReactComponent as AddProfileIcon } from '../../assets/svg/plus-profile.svg';
@@ -17,22 +14,19 @@ import useDebounce from '../../hooks/useDebounce';
 import ProfilesTableRow from '../components/profilesTableRow';
 import _ from 'lodash';
 import TableContainer from '../components/tableContainer';
+import { useQuery, useLazyQuery } from '@apollo/client';
+import { getProfilesQuery } from '../../store/queries/profileQueries';
 
 function Profile() {
-	const [doFetchProfiles, isLoadingProfiles, loadingProfilesError] = useThunk(fetchProfiles);
-	const { profiles, size } = useSelector((state) => {
-		return state.profiles.data;
-	});
-
 	const { debounce } = useDebounce();
 
 	const [search, setSearch] = useState('');
 	const [page, setPage] = useState(0);
+	const [isFirstLoad, setIsFirstLoad] = useState(true);
 	const [sortBy, setSortBy] = useState('is_verified');
 	const [sortOrder, setSortOrder] = useState(-1);
-	const [fetchingMore, setFetchingMore] = useState(false);
 	const [rows, setRows] = useState(16);
-	const [selectedProfile, setSelectedProfile] = useState({});
+	const [selectedProfile, setSelectedProfile] = useState(null);
 
 	const [view, setView] = useState('card');
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -45,14 +39,54 @@ function Profile() {
 		{ name: 'description', key: 'description', isSortable: false },
 	];
 
+	const { loading, error, data, previousData, refetch, fetchMore } = useQuery(getProfilesQuery, {
+		variables: {
+			orderBy: {
+				key: sortBy,
+				sort: sortOrder === -1 ? 'desc' : 'asc',
+			},
+			rows: rows,
+			page: page,
+			searchString: search,
+		},
+	});
+
+	const [
+		queryProfiles,
+		{
+			loading: isProfileLoading,
+			error: profileError,
+			data: profileData,
+			fetchMore: fetchMoreProfiles,
+		},
+	] = useLazyQuery(getProfilesQuery, {
+		variables: {
+			orderBy: {
+				key: sortBy,
+				sort: sortOrder === -1 ? 'desc' : 'asc',
+			},
+			rows: rows,
+			page: page,
+			searchString: search,
+		},
+	});
+
+	useEffect(() => {
+		if (isFirstLoad === true) {
+			setIsFirstLoad(false);
+		}
+	}, []);
+
+	console.log(data);
+
 	const handleWindowResize = (event) => {
 		// Get width and height of the window excluding scrollbars
 		var w = document.documentElement.clientWidth;
 		var h = document.documentElement.clientHeight;
 
-		if (w <= 768) {
+		if (w <= 768 && view !== 'card') {
 			handleChangeView('card');
-		} else if (w > 768) {
+		} else if (w > 768 && view !== 'table') {
 			handleChangeView('table');
 		}
 	};
@@ -65,28 +99,12 @@ function Profile() {
 		};
 	}, [handleWindowResize]);
 
-	useEffect(() => {
-		doFetchProfiles({
-			variables: {
-				orderBy: {
-					key: sortBy,
-					sort: sortOrder === -1 ? 'desc' : 'asc',
-				},
-				rows: rows,
-				page: page,
-				searchString: search,
-			},
-			isInfinite: view === 'card',
-		});
-	}, [doFetchProfiles]);
-
 	const handleAddProfile = () => {
 		setShowAddModal(true);
 	};
 
 	const handleSearchFetch = (e) => {
-		setFetchingMore(true);
-		doFetchProfiles({
+		refetch({
 			variables: {
 				orderBy: {
 					key: sortBy,
@@ -96,8 +114,8 @@ function Profile() {
 				page: 0,
 				searchString: e.target.value,
 			},
-			isInfinite: false,
 		});
+		setPage(0);
 	};
 
 	const handleOnSearch = (e) => {
@@ -107,21 +125,31 @@ function Profile() {
 		});
 	};
 
-	const fetchMore = () => {
-		setFetchingMore(true);
-		doFetchProfiles({
-			variables: {
-				orderBy: {
-					key: sortBy,
-					sort: sortOrder === -1 ? 'desc' : 'asc',
+	const fetchMoreFunc = () => {
+		if (page * rows + rows < data.getAllProfiles.size) {
+			fetchMoreProfiles({
+				variables: {
+					orderBy: {
+						key: sortBy,
+						sort: sortOrder === -1 ? 'desc' : 'asc',
+					},
+					rows: rows,
+					page: page + 1,
+					searchString: search,
 				},
-				rows: rows,
-				page: page + 1,
-				searchString: search,
-			},
-			isInfinite: view === 'card',
-		});
-		setPage(page + 1);
+				updateQuery: (previousResult, { fetchMoreResult }) => {
+					const newProfiles = fetchMoreResult.getAllProfiles.profiles;
+					return {
+						getAllProfiles: {
+							size: fetchMoreResult.getAllProfiles.size,
+							profiles: [...previousResult.getAllProfiles.profiles, ...newProfiles],
+						},
+					};
+				},
+			});
+
+			setPage(page + 1);
+		}
 	};
 
 	const handleClickMore = (type, profile) => {
@@ -136,9 +164,7 @@ function Profile() {
 	};
 
 	const handleChangeView = (view) => {
-		setFetchingMore(true);
-
-		doFetchProfiles({
+		refetch({
 			variables: {
 				orderBy: {
 					key: sortBy,
@@ -148,14 +174,30 @@ function Profile() {
 				page: 0,
 				searchString: search,
 			},
-			isInfinite: false,
 		});
+
 		if (view === 'table') {
 			setRows(10);
 		} else {
 			setRows(16);
 		}
 		setView(view);
+		setPage(0);
+	};
+
+	const onDetailsUpdated = () => {
+		refetch({
+			variables: {
+				orderBy: {
+					key: sortBy,
+					sort: sortOrder === -1 ? 'desc' : 'asc',
+				},
+				rows: view === 'table' ? 10 : 16,
+				page: 0,
+				searchString: search,
+			},
+		});
+		setPage(0);
 	};
 
 	const onSortTable = (value) => {
@@ -170,8 +212,7 @@ function Profile() {
 			setSortOrder(-1);
 		}
 
-		setFetchingMore(true);
-		doFetchProfiles({
+		refetch({
 			variables: {
 				orderBy: {
 					key: sBy,
@@ -181,14 +222,12 @@ function Profile() {
 				page: 0,
 				searchString: search,
 			},
-			isInfinite: false,
 		});
+		setPage(0);
 	};
 
 	const onClickChangeRows = (value) => {
-		setFetchingMore(true);
-
-		doFetchProfiles({
+		refetch({
 			variables: {
 				orderBy: {
 					key: sortBy,
@@ -198,16 +237,14 @@ function Profile() {
 				page: 0,
 				searchString: search,
 			},
-			isInfinite: false,
 		});
+		setPage(0);
 		setRows(value);
 	};
 
 	const fetchPrev = () => {
 		if (page > 0) {
-			setFetchingMore(true);
-
-			doFetchProfiles({
+			refetch({
 				variables: {
 					orderBy: {
 						key: sortBy,
@@ -217,17 +254,14 @@ function Profile() {
 					page: page - 1,
 					searchString: search,
 				},
-				isInfinite: false,
 			});
 			setPage((page) => page - 1);
 		}
 	};
 
 	const fetchNext = () => {
-		if (page * rows + rows < size) {
-			setFetchingMore(true);
-
-			doFetchProfiles({
+		if (page * rows + rows < data.getAllProfiles.size) {
+			refetch({
 				variables: {
 					orderBy: {
 						key: sortBy,
@@ -237,14 +271,33 @@ function Profile() {
 					page: page + 1,
 					searchString: search,
 				},
-				isInfinite: false,
 			});
 			setPage((page) => page + 1);
 		}
 	};
 
-	if (!fetchingMore && isLoadingProfiles) {
+	if (isProfileLoading === false && loading === true) {
 		return;
+	}
+
+	if (error) {
+		<>
+			<ActionsContainer>
+				<SearchBar value={search} onChange={(e) => handleOnSearch(e)} />
+				<div className="vn-actions-right-container">
+					<Button
+						type="primary"
+						title="Create Profile"
+						leftIcon={<AddProfileIcon />}
+						isOutline={true}
+						onButtonClick={() => {}}
+						isLoading={false}
+					/>
+					<ToggleView onViewChange={(view) => {}} activeView={view} />
+				</div>
+			</ActionsContainer>
+			<div className="vn-infinite-container">{error}</div>
+		</>;
 	}
 
 	return (
@@ -266,11 +319,14 @@ function Profile() {
 			{view === 'card' ? (
 				<div className="vn-infinite-container">
 					<InfiniteScrollComponent
-						dataLength={_.size(profiles)}
-						next={fetchMore}
-						hasMore={_.size(profiles) < (size ? size : 0)}
+						dataLength={_.size(data?.getAllProfiles.profiles)}
+						next={fetchMoreFunc}
+						hasMore={
+							_.size(data?.getAllProfiles.profiles) <
+							(data?.getAllProfiles.size ? data?.getAllProfiles.size : 0)
+						}
 					>
-						{_.map(profiles, (profile, index) => {
+						{_.map(data?.getAllProfiles.profiles, (profile, index) => {
 							return (
 								<Card
 									key={profile.id + index}
@@ -289,13 +345,13 @@ function Profile() {
 					onClickChangeRows={onClickChangeRows}
 					rows={rows}
 					page={page}
-					size={size}
+					size={data?.getAllProfiles.size}
 					sortBy={sortBy}
 					sortOrder={sortOrder}
 					fetchPrev={fetchPrev}
 					fetchNext={fetchNext}
 				>
-					{_.map(profiles, (profile, index) => {
+					{_.map(data?.getAllProfiles.profiles, (profile, index) => {
 						return (
 							<ProfilesTableRow
 								key={profile.id + index}
@@ -307,23 +363,50 @@ function Profile() {
 				</TableContainer>
 			)}
 			{showDeleteModal ? (
-				<Modal handleClose={() => setShowDeleteModal(false)} show={showDeleteModal}>
+				<Modal
+					handleClose={() => {
+						setSelectedProfile(null);
+						setShowDeleteModal(false);
+					}}
+					show={showDeleteModal}
+				>
 					<DeleteWarningModal
 						title="Remove profile"
 						bodyText="Removed profile will be deleted permenantly and won’t be available anymore."
-						onCancel={() => setShowDeleteModal(false)}
-						onClose={() => setShowDeleteModal(false)}
+						onCancel={() => {
+							setSelectedProfile(null);
+							setShowDeleteModal(false);
+						}}
+						onClose={() => {
+							setSelectedProfile(null);
+							setShowDeleteModal(false);
+						}}
 						selectedProfile={selectedProfile}
 					/>
 				</Modal>
 			) : null}
 			{showAddModal ? (
-				<Modal handleClose={() => setShowAddModal(false)} show={showAddModal}>
+				<Modal
+					handleClose={() => {
+						setSelectedProfile(null);
+						setShowAddModal(false);
+					}}
+					show={showAddModal}
+				>
 					<AddEditProfileModal
 						title="Create Profile"
 						fields={selectedProfile ? selectedProfile : {}}
 						onClose={() => {
+							setSelectedProfile(null);
 							setShowAddModal(false);
+						}}
+						onUpdateProfile={() => {
+							setSelectedProfile(null);
+							onDetailsUpdated();
+						}}
+						onAddProfile={() => {
+							setSelectedProfile(null);
+							onDetailsUpdated();
 						}}
 						isEdit={selectedProfile ? true : false}
 					/>
