@@ -6,6 +6,7 @@ function Dropdown({ options, onClickOption, children, className }) {
 
 	let dropdownref = useRef(null);
 
+	// eslint-disable-next-line
 	const handleClickOutside = (event) => {
 		if (dropdownref.current && !dropdownref.current.contains(event.target)) {
 			setIsOpen(false);

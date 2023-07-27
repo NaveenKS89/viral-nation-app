@@ -1,6 +1,5 @@
 import React from 'react';
 import InfinityLoader from '../../assets/svg/infinityLoader';
-import _ from 'lodash';
 
 function LoadingIcon() {
 

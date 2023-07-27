@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 function SearchBar({ onChange, value, ...rest }) {
 	return (
@@ -7,6 +7,7 @@ function SearchBar({ onChange, value, ...rest }) {
 			onChange={(e) => onChange(e)}
 			value={value}
 			className="vn-search-bar-container"
+			placeholder='Search'
 			{...rest}
 		/>
 	);

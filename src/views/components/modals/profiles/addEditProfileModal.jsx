@@ -8,7 +8,7 @@ import { useMutation } from '@apollo/client';
 import {
 	addProfileMutation,
 	updateProfileMutation,
-} from '../../../../store/queries/profileQueries';
+} from '../../../../queries/profileQueries';
 import { toast } from 'react-toastify';
 import jwt_decode from 'jwt-decode';
 

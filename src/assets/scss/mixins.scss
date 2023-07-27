@@ -1,7 +1,7 @@
 @import './variables.scss';
 @import './color-palette.scss';
 @use 'sass:string';
-@import url(http://fonts.googleapis.com/css?family=Roboto:700,400,500,300);
+@import url(https://fonts.googleapis.com/css?family=Roboto:700,400,500,300);
 
 @mixin ellipsis {
 	white-space: nowrap;

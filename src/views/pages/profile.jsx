@@ -15,7 +15,7 @@ import _ from 'lodash';
 import { useDebounce } from '../../hooks/useDebounce';
 import TableContainer from '../components/tableContainer';
 import { useQuery } from '@apollo/client';
-import { getProfilesQuery } from '../../store/queries/profileQueries';
+import { getProfilesQuery } from '../../queries/profileQueries';
 import LoadingIcon from '../components/LoadingIcon';
 import { NetworkStatus } from '@apollo/client';
 

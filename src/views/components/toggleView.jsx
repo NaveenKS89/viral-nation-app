@@ -1,7 +1,6 @@
 import React from 'react';
 import { ReactComponent as TableIcon } from '../../assets/svg/list.svg';
 import { ReactComponent as CardIcon } from '../../assets/svg/board.svg';
-import _ from 'lodash';
 
 function ToggleView({ onViewChange, activeView }) {
 	return (

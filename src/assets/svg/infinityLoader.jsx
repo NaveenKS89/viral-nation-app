@@ -1,12 +1,5 @@
 import * as React from 'react';
-import _ from 'lodash';
-const Loader = (props) => {
-	let theme;
-	if (props.theme === 'light') {
-		theme = '#707070';
-	} else {
-		theme = '#c4c4c4';
-	}
+const Loader = () => {
 	return (
 		<svg
 			width="300px"
