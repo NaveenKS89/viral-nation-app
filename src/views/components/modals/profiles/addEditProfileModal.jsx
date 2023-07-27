@@ -1,17 +1,18 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { ReactComponent as CloseIcon } from '../../../../assets/svg/close_24px.svg';
 import Button from '../../button';
 import Input from '../../input';
 import TextArea from '../../textarea';
 import ToggleInput from '../../toggleInput';
-import _ from 'lodash';
 import { useMutation } from '@apollo/client';
 import {
 	addProfileMutation,
 	updateProfileMutation,
 } from '../../../../store/queries/profileQueries';
+import { toast } from 'react-toastify';
+import jwt_decode from 'jwt-decode';
 
-function AddEditProfileModal({ title, fields, onClose, isEdit, onAddProfile, onUpdateProfile }) {
+function AddEditProfileModal({ fields, onClose, isEdit, onAddProfile, onUpdateProfile }) {
 
 	const [doCreateProfile, { loading: isCreatingProfile, error: creatingProfileError }] =
 		useMutation(addProfileMutation);
@@ -89,6 +90,10 @@ function AddEditProfileModal({ title, fields, onClose, isEdit, onAddProfile, onU
 	const handleSubmitAdd = () => {
 		setIsSubmitting(true);
 		let isError = false;
+		let usertoken = localStorage.getItem('usertoken');
+		const decoded = jwt_decode(usertoken);
+
+		let currTheme = localStorage.getItem(`userThemePref::${decoded.candidate_name}`)
 		if (image_url === '') {
 			setImage_urlError(true);
 			isError = true;
@@ -123,11 +128,31 @@ function AddEditProfileModal({ title, fields, onClose, isEdit, onAddProfile, onU
 			doCreateProfile({
 				variables: json,
 				onCompleted: () => {
+					toast.success('Profile added!', {
+						position: "top-right",
+						autoClose: 3000,
+						hideProgressBar: false,
+						closeOnClick: true,
+						pauseOnHover: true,
+						draggable: true,
+						progress: undefined,
+						theme: currTheme !== 'theme-dark' ?  "dark" : "light",
+						});
 					onAddProfile();
 					setIsSubmitting(false);
 					onClose();
 				},
 				onError: () => {
+					toast.error('Failed to add Profile', {
+						position: "top-right",
+						autoClose: 3000,
+						hideProgressBar: false,
+						closeOnClick: true,
+						pauseOnHover: true,
+						draggable: true,
+						progress: undefined,
+						theme: currTheme !== 'theme-dark' ?  "dark" : "light",
+						});
 					setIsSubmitting(false);
 				},
 			});
@@ -137,6 +162,11 @@ function AddEditProfileModal({ title, fields, onClose, isEdit, onAddProfile, onU
 	const handleSubmitEdit = () => {
 		setIsSubmitting(true);
 		let isError = false;
+		let usertoken = localStorage.getItem('usertoken');
+		const decoded = jwt_decode(usertoken);
+
+		let currTheme = localStorage.getItem(`userThemePref::${decoded.candidate_name}`)
+
 		if (image_url === '') {
 			setImage_urlError(true);
 			isError = true;
@@ -172,11 +202,31 @@ function AddEditProfileModal({ title, fields, onClose, isEdit, onAddProfile, onU
 			doEditProfile({
 				variables: json,
 				onCompleted: () => {
+					toast.success('Profile updated!', {
+						position: "top-right",
+						autoClose: 3000,
+						hideProgressBar: false,
+						closeOnClick: true,
+						pauseOnHover: true,
+						draggable: true,
+						progress: undefined,
+						theme: currTheme !== 'theme-dark' ?  "dark" : "light",
+						});
 					onUpdateProfile();
 					setIsSubmitting(false);
 					onClose();
 				},
 				onError: () => {
+					toast.error('Failed to update Profile', {
+						position: "top-right",
+						autoClose: 3000,
+						hideProgressBar: false,
+						closeOnClick: true,
+						pauseOnHover: true,
+						draggable: true,
+						progress: undefined,
+						theme: currTheme !== 'theme-dark' ?  "dark" : "light",
+						});
 					setIsSubmitting(false);
 				},
 			});

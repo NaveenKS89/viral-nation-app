@@ -31,6 +31,7 @@ function Dropdown({ options, onClickOption, children, className }) {
 					{_.map(options, (option, index) => {
 						return (
 							<div
+								key={option.value + index}
 								className="vn-dropdown-item"
 								onClick={(e) => {
 									e.stopPropagation();

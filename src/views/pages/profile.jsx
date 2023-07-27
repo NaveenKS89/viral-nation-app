@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { withRouter } from '../../services/withRouter';
 import SearchBar from '../components/searchBar';
 import { ReactComponent as AddProfileIcon } from '../../assets/svg/plus-profile.svg';
@@ -10,19 +10,18 @@ import Modal from '../components/modals';
 import InfiniteScrollComponent from '../components/infiniteScrollComponent';
 import DeleteWarningModal from '../components/modals/profiles/deleteWarningModal';
 import AddEditProfileModal from '../components/modals/profiles/addEditProfileModal';
-import {useDebounce} from '../../hooks/useDebounce';
 import ProfilesTableRow from '../components/profilesTableRow';
 import _ from 'lodash';
+import { useDebounce } from '../../hooks/useDebounce';
 import TableContainer from '../components/tableContainer';
-import { useQuery, useLazyQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { getProfilesQuery } from '../../store/queries/profileQueries';
 import LoadingIcon from '../components/LoadingIcon';
+import { NetworkStatus } from '@apollo/client';
 
 function Profile() {
-	let  delayDebounceFn  = useRef(null);
 	const [search, setSearch] = useState('');
 	const [page, setPage] = useState(0);
-	const [isFirstLoad, setIsFirstLoad] = useState(true);
 	const [sortBy, setSortBy] = useState('is_verified');
 	const [sortOrder, setSortOrder] = useState(-1);
 	const [rows, setRows] = useState(16);
@@ -39,7 +38,7 @@ function Profile() {
 		{ name: 'description', key: 'description', isSortable: false },
 	];
 
-	const { loading, error, data, previousData, refetch, fetchMore } = useQuery(getProfilesQuery, {
+	const { networkStatus, error, data, refetch, fetchMore } = useQuery(getProfilesQuery, {
 		variables: {
 			orderBy: {
 				key: sortBy,
@@ -49,40 +48,21 @@ function Profile() {
 			page: page,
 			searchString: search,
 		},
+		notifyOnNetworkStatusChange: true,
 	});
 
-	const searchQuery = useDebounce(search, 500);
-
-	/* const [
-		queryProfiles,
-		{
-			loading: isProfileLoading,
-			error: profileError,
-			data: profileData,
-			fetchMore: fetchMoreProfiles,
-		},
-	] = useLazyQuery(getProfilesQuery, {
-		variables: {
-			orderBy: {
-				key: sortBy,
-				sort: sortOrder === -1 ? 'desc' : 'asc',
-			},
-			rows: rows,
-			page: page,
+	const debouncedRequest = useDebounce(() => {
+		refetch({
+			page: 0,
 			searchString: search,
-		},
-	}); */
-
-	useEffect(() => {
-		if (isFirstLoad === true) {
-			setIsFirstLoad(false);
-		}
-	}, []);
+		});
+		setPage(0);
+	});
 
 	const handleWindowResize = (event) => {
 		// Get width and height of the window excluding scrollbars
 		var w = document.documentElement.clientWidth;
-		var h = document.documentElement.clientHeight;
+		//var h = document.documentElement.clientHeight;
 
 		if (w <= 768 && view !== 'card') {
 			handleChangeView('card');
@@ -103,51 +83,13 @@ function Profile() {
 		setShowAddModal(true);
 	};
 
-	/* const handleSearchFetch = useCallback(_.debounce((e) => {
-		setPage(0);
-		refetch({
-			variables: {
-				orderBy: {
-					key: sortBy,
-					sort: sortOrder === -1 ? 'desc' : 'asc',
-				},
-				rows: rows,
-				page: 0,
-				searchString: e.target.value,
-			},
-		});}, [])); */
-
-	useEffect(() => {
-		
-		if(searchQuery || search.length < 0)searchCharacter()
-		function searchCharacter() {
-				setPage(0);
-				refetch({
-					variables: {
-						orderBy: {
-							key: sortBy,
-							sort: sortOrder === -1 ? 'desc' : 'asc',
-						},
-						rows: rows,
-						page: 0,
-						searchString: searchQuery,
-					},
-				});
-		}
-
-	}, [searchQuery]);
-
 	const fetchMoreFunc = () => {
 		if (page * rows + rows < data.getAllProfiles.size) {
+			let newPage = page + 1;
+
 			fetchMore({
 				variables: {
-					orderBy: {
-						key: sortBy,
-						sort: sortOrder === -1 ? 'desc' : 'asc',
-					},
-					rows: rows,
-					page: page + 1,
-					searchString: search,
+					page: newPage,
 				},
 				updateQuery: (previousResult, { fetchMoreResult }) => {
 					const newProfiles = fetchMoreResult.getAllProfiles.profiles;
@@ -159,8 +101,6 @@ function Profile() {
 					};
 				},
 			});
-
-			setPage(page + 1);
 		}
 	};
 
@@ -177,15 +117,13 @@ function Profile() {
 
 	const handleChangeView = (view) => {
 		refetch({
-			variables: {
-				orderBy: {
-					key: sortBy,
-					sort: sortOrder === -1 ? 'desc' : 'asc',
-				},
-				rows: view === 'table' ? 10 : 16,
-				page: 0,
-				searchString: search,
+			orderBy: {
+				key: sortBy,
+				sort: sortOrder === -1 ? 'desc' : 'asc',
 			},
+			rows: view === 'table' ? 10 : 16,
+			page: 0,
+			searchString: search,
 		});
 
 		if (view === 'table') {
@@ -199,15 +137,13 @@ function Profile() {
 
 	const onDetailsUpdated = () => {
 		refetch({
-			variables: {
-				orderBy: {
-					key: sortBy,
-					sort: sortOrder === -1 ? 'desc' : 'asc',
-				},
-				rows: view === 'table' ? 10 : 16,
-				page: 0,
-				searchString: search,
+			orderBy: {
+				key: sortBy,
+				sort: sortOrder === -1 ? 'desc' : 'asc',
 			},
+			rows: view === 'table' ? 10 : 16,
+			page: 0,
+			searchString: search,
 		});
 		setPage(0);
 	};
@@ -225,30 +161,26 @@ function Profile() {
 		}
 
 		refetch({
-			variables: {
-				orderBy: {
-					key: sBy,
-					sort: sOrder === -1 ? 'desc' : 'asc',
-				},
-				rows: rows,
-				page: 0,
-				searchString: search,
+			orderBy: {
+				key: sBy,
+				sort: sOrder === -1 ? 'desc' : 'asc',
 			},
+			rows: rows,
+			page: 0,
+			searchString: search,
 		});
 		setPage(0);
 	};
 
 	const onClickChangeRows = (value) => {
 		refetch({
-			variables: {
-				orderBy: {
-					key: sortBy,
-					sort: sortOrder === -1 ? 'desc' : 'asc',
-				},
-				rows: value,
-				page: 0,
-				searchString: search,
+			orderBy: {
+				key: sortBy,
+				sort: sortOrder === -1 ? 'desc' : 'asc',
 			},
+			rows: value,
+			page: 0,
+			searchString: search,
 		});
 		setPage(0);
 		setRows(value);
@@ -256,46 +188,49 @@ function Profile() {
 
 	const fetchPrev = () => {
 		if (page > 0) {
+			let newPage = page - 1;
 			refetch({
-				variables: {
-					orderBy: {
-						key: sortBy,
-						sort: sortOrder === -1 ? 'desc' : 'asc',
-					},
-					rows: rows,
-					page: page - 1,
-					searchString: search,
+				orderBy: {
+					key: sortBy,
+					sort: sortOrder === -1 ? 'desc' : 'asc',
 				},
+				rows: rows,
+				page: newPage,
+				searchString: search,
 			});
-			setPage((page) => page - 1);
+			setPage(page - 1);
 		}
 	};
 
 	const fetchNext = () => {
 		if (page * rows + rows < data.getAllProfiles.size) {
 			refetch({
-				variables: {
-					orderBy: {
-						key: sortBy,
-						sort: sortOrder === -1 ? 'desc' : 'asc',
-					},
-					rows: rows,
-					page: page + 1,
-					searchString: search,
+				orderBy: {
+					key: sortBy,
+					sort: sortOrder === -1 ? 'desc' : 'asc',
 				},
+				rows: rows,
+				page: page + 1,
+				searchString: search,
 			});
-			setPage((page) => page + 1);
+			setPage(page + 1);
 		}
+	};
+
+	const onChangeSearch = (e) => {
+		const value = e.target.value;
+		setSearch(value);
+		debouncedRequest();
 	};
 
 	/* if (loading === true) {
 		return <LoadingIcon />;
 	} */
 
-	/* if (error) {
+	if (error) {
 		<>
 			<ActionsContainer>
-				<SearchBar value={search} onChange={(e) => handleOnSearch(e)} />
+				<SearchBar value={search} onChange={(e) => {}} />
 				<div className="vn-actions-right-container">
 					<Button
 						type="primary"
@@ -305,17 +240,17 @@ function Profile() {
 						onButtonClick={() => {}}
 						isLoading={false}
 					/>
-					<ToggleView onViewChange={(view) => {}} activeView={view} />
+					<ToggleView onViewChange={() => {}} activeView={view} />
 				</div>
 			</ActionsContainer>
-			<div className="vn-infinite-container">{error}</div>
+			<div className="vn-infinite-container">{error?.message}</div>
 		</>;
-	} */
+	}
 
 	return (
 		<>
 			<ActionsContainer>
-				<SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
+				<SearchBar value={search} onChange={(e) => onChangeSearch(e)} />
 				<div className="vn-actions-right-container">
 					<Button
 						type="primary"
@@ -328,7 +263,7 @@ function Profile() {
 					<ToggleView onViewChange={(view) => handleChangeView(view)} activeView={view} />
 				</div>
 			</ActionsContainer>
-			{loading ? (
+			{networkStatus === NetworkStatus.loading || networkStatus === NetworkStatus.refetch ? (
 				<div className="vn-infinite-container">
 					<LoadingIcon />
 				</div>
@@ -345,7 +280,7 @@ function Profile() {
 						{_.map(data?.getAllProfiles.profiles, (profile, index) => {
 							return (
 								<Card
-									key={profile.id + index}
+									key={'card' + profile.id + index}
 									profile={profile}
 									onClickMore={handleClickMore}
 								/>
@@ -370,7 +305,7 @@ function Profile() {
 					{_.map(data?.getAllProfiles.profiles, (profile, index) => {
 						return (
 							<ProfilesTableRow
-								key={profile.id + index}
+								key={'table' + profile.id + index}
 								profile={profile}
 								onClickMore={handleClickMore}
 							/>

@@ -6,8 +6,7 @@ import App from './App';
 import { TOKEN } from './services/token';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
-import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
+import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 const API = require('./services/config').graphql_api_server;
 
 const client = new ApolloClient({
